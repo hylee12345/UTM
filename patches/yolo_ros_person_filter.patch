@@ -1,0 +1,165 @@
+diff --git a/yolo_bringup/launch/yolo.launch.py b/yolo_bringup/launch/yolo.launch.py
+index 5aa9223..36d9e64 100644
+--- a/yolo_bringup/launch/yolo.launch.py
++++ b/yolo_bringup/launch/yolo.launch.py
+@@ -98,6 +98,13 @@ def generate_launch_description():
+             description="Minimum probability of a detection to be published",
+         )
+ 
++        classes = LaunchConfiguration("classes")
++        classes_cmd = DeclareLaunchArgument(
++            "classes",
++            default_value="",
++            description="Comma-separated list of class IDs to detect",
++        )
++
+         iou = LaunchConfiguration("iou")
+         iou_cmd = DeclareLaunchArgument(
+             "iou",
+@@ -254,6 +261,7 @@ def generate_launch_description():
+                     "yolo_encoding": yolo_encoding,
+                     "enable": enable,
+                     "threshold": threshold,
++                    "classes": classes,
+                     "iou": iou,
+                     "imgsz_height": imgsz_height,
+                     "imgsz_width": imgsz_width,
+@@ -324,6 +332,7 @@ def generate_launch_description():
+             yolo_encoding_cmd,
+             enable_cmd,
+             threshold_cmd,
++            classes_cmd,
+             iou_cmd,
+             imgsz_height_cmd,
+             imgsz_width_cmd,
+diff --git a/yolo_bringup/launch/yolov8.launch.py b/yolo_bringup/launch/yolov8.launch.py
+index 29a528d..5b9e649 100644
+--- a/yolo_bringup/launch/yolov8.launch.py
++++ b/yolo_bringup/launch/yolov8.launch.py
+@@ -39,9 +39,9 @@ def generate_launch_description():
+                     "tracker": LaunchConfiguration("tracker", default="bytetrack.yaml"),
+                     "device": LaunchConfiguration("device", default="cuda:0"),
+                     "enable": LaunchConfiguration("enable", default="True"),
+-                    "threshold": LaunchConfiguration("threshold", default="0.5"),
++                    "threshold": LaunchConfiguration("threshold", default="0.9"),
+                     "input_image_topic": LaunchConfiguration(
+-                        "input_image_topic", default="/camera/rgb/image_raw"
++                        "input_image_topic", default="/image_raw"
+                     ),
+                     "image_reliability": LaunchConfiguration(
+                         "image_reliability", default="1"
+diff --git a/yolo_ros/package.xml b/yolo_ros/package.xml
+index 1078571..bd22821 100644
+--- a/yolo_ros/package.xml
++++ b/yolo_ros/package.xml
+@@ -13,6 +13,7 @@
+   <depend>rclpy</depend>
+   <depend>cv_bridge</depend>
+   <depend>message_filters</depend>
++  <depend>rcl_interfaces</depend>
+   <depend>tf2_ros</depend>
+   <depend>std_srvs</depend>
+   <depend>geometry_msgs</depend>
+@@ -22,4 +23,4 @@
+   <export>
+     <build_type>ament_python</build_type>
+   </export>
+-</package>
+\ No newline at end of file
++</package>
+diff --git a/yolo_ros/yolo_ros/yolo_node.py b/yolo_ros/yolo_ros/yolo_node.py
+index da6dba0..7373349 100644
+--- a/yolo_ros/yolo_ros/yolo_node.py
++++ b/yolo_ros/yolo_ros/yolo_node.py
+@@ -14,7 +14,8 @@
+ # along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ 
+ 
+-from typing import List, Dict
++import ast
++from typing import Any, Dict, List, Optional
+ from cv_bridge import CvBridge
+ 
+ import rclpy
+@@ -33,6 +34,7 @@ from ultralytics.engine.results import Boxes
+ from ultralytics.engine.results import Masks
+ from ultralytics.engine.results import Keypoints
+ 
++from rcl_interfaces.msg import ParameterDescriptor
+ from std_srvs.srv import SetBool
+ from sensor_msgs.msg import Image
+ from yolo_msgs.msg import Point2D
+@@ -72,6 +74,9 @@ class YoloNode(LifecycleNode):
+         self.declare_parameter("image_reliability", QoSReliabilityPolicy.BEST_EFFORT)
+ 
+         self.declare_parameter("threshold", 0.5)
++        self.declare_parameter(
++            "classes", descriptor=ParameterDescriptor(dynamic_typing=True)
++        )
+         self.declare_parameter("iou", 0.5)
+         self.declare_parameter("imgsz_height", 640)
+         self.declare_parameter("imgsz_width", 640)
+@@ -111,6 +116,13 @@ class YoloNode(LifecycleNode):
+         self.threshold = (
+             self.get_parameter("threshold").get_parameter_value().double_value
+         )
++        try:
++            self.classes = self.parse_classes(self.get_parameter("classes").value)
++        except ValueError as e:
++            self.get_logger().error(f"Invalid classes parameter: {e}")
++            return TransitionCallbackReturn.ERROR
++        if self.classes is not None:
++            self.get_logger().info(f"Filtering classes: {self.classes}")
+         self.iou = self.get_parameter("iou").get_parameter_value().double_value
+         self.imgsz_height = (
+             self.get_parameter("imgsz_height").get_parameter_value().integer_value
+@@ -275,6 +287,41 @@ class YoloNode(LifecycleNode):
+         response.success = True
+         return response
+ 
++    def parse_classes(self, classes: Any) -> Optional[List[int]]:
++        """
++        Parse class IDs from a launch parameter.
++
++        Accepts values such as 0, "0", "0,2", or [0, 2].
++        """
++
++        if classes is None:
++            return None
++
++        parsed_classes = classes
++        if isinstance(classes, str):
++            if not classes.strip():
++                return None
++
++            try:
++                parsed_classes = ast.literal_eval(classes)
++            except (SyntaxError, ValueError):
++                parsed_classes = classes
++
++        if isinstance(parsed_classes, int):
++            class_ids = [parsed_classes]
++        elif isinstance(parsed_classes, str):
++            class_ids = [
++                int(class_id.strip())
++                for class_id in parsed_classes.split(",")
++                if class_id.strip()
++            ]
++        elif isinstance(parsed_classes, (list, tuple)):
++            class_ids = [int(class_id) for class_id in parsed_classes]
++        else:
++            raise ValueError(f"expected class IDs, got '{classes}'")
++
++        return class_ids or None
++
+     def parse_hypothesis(self, results: Results) -> List[Dict]:
+         """
+         Parse detection hypotheses from YOLO results.
+@@ -450,6 +497,7 @@ class YoloNode(LifecycleNode):
+                 max_det=self.max_det,
+                 augment=self.augment,
+                 agnostic_nms=self.agnostic_nms,
++                classes=self.classes,
+                 retina_masks=self.retina_masks,
+                 device=self.device,
+             )

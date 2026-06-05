@@ -1,0 +1,20 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+
+# ROS 2 workspace outputs
+build/
+install/
+log/
+
+# Local runtime data
+*.bag
+*.db3
+*.pt
+*.onnx
+
+# Editors
+.vscode/
+.idea/
+*~
