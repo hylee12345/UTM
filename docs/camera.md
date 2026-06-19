@@ -1,6 +1,6 @@
 # Camera
 
-The camera command starts `usb_cam` and publishes `/image_raw`.
+The camera command starts `usb_cam` and publishes `/image_raw`. The rectified workflow uses `camera_rect`, which publishes `/camera/image_raw` and `/camera/image_rect`.
 
 ## Alias
 
@@ -30,7 +30,7 @@ Important topics:
 /camera_info
 ```
 
-The current workflow uses `/image_raw` as the input to `red_dot_monitoring`.
+The current workflow uses `/camera/image_rect` as the input to `green_dot_monitoring`.
 
 ## Check
 

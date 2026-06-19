@@ -1,17 +1,18 @@
 # YOLO
 
-YOLO runs after `red_dot_monitoring` and consumes `/image_utm`.
+YOLO runs after `green_dot_monitoring` and consumes `/image_utm`.
 
 The current local `yolo` alias launches `yolov8.launch.py` with:
 
 ```text
 input_image_topic:=/image_utm
+classes:=0
 ```
 
 ## Alias
 
 ```bash
-alias yolo='ros2 launch yolo_bringup yolov8.launch.py input_image_topic:=/image_utm'
+alias yolo='ros2 launch yolo_bringup yolov8.launch.py input_image_topic:=/image_utm classes:=0'
 ```
 
 ## Run
@@ -23,7 +24,7 @@ yolo
 Equivalent command:
 
 ```bash
-ros2 launch yolo_bringup yolov8.launch.py input_image_topic:=/image_utm
+ros2 launch yolo_bringup yolov8.launch.py input_image_topic:=/image_utm classes:=0
 ```
 
 ## Notes
@@ -40,6 +41,7 @@ The patched `yolov8.launch.py` defaults used during development:
 threshold = 0.9
 device = cuda:0
 input_image_topic = /image_raw
+classes = 0
 ```
 
 The alias overrides the input topic to `/image_utm`.

@@ -13,6 +13,7 @@ log/
 *.db3
 *.pt
 *.onnx
+debug_snapshots/
 
 # Editors
 .vscode/

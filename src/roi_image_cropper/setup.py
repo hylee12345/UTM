@@ -2,7 +2,7 @@ from glob import glob
 
 from setuptools import setup
 
-package_name = "compression_tester_monitor"
+package_name = "roi_image_cropper"
 
 setup(
     name=package_name,
@@ -17,11 +17,11 @@ setup(
     zip_safe=True,
     maintainer="lee-junyoung",
     maintainer_email="lee-junyoung@todo.todo",
-    description="Green marker based compression tester state monitor.",
+    description="Simple ROS2 image ROI cropper.",
     license="Apache-2.0",
     entry_points={
         "console_scripts": [
-            "green_dot_monitor = compression_tester_monitor.green_dot_monitor:main",
+            "roi_image_cropper = roi_image_cropper.roi_image_cropper:main",
         ],
     },
 )

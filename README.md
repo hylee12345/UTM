@@ -1,18 +1,18 @@
 # UTM_VISION
 
-Fixed-camera ROS 2 vision workflow for monitoring a compression tester with red visual markers and feeding an annotated image into YOLO.
+Fixed-camera ROS 2 vision workflow for monitoring a compression tester with green visual markers and feeding an annotated image into YOLO.
 
 ## Overview
 
 The system is split into three runtime steps:
 
 ```text
-camera
-  publishes /image_raw at 1 Hz
+camera_rect
+  publishes /camera/image_raw and /camera/image_rect
 
-red_dot_monitoring
-  subscribes /image_raw
-  detects red marker dots
+green_dot_monitoring
+  subscribes /camera/image_rect
+  detects green marker dots
   publishes /image_utm and /compression_tester/*
 
 yolo
@@ -20,7 +20,7 @@ yolo
   publishes /yolo/detections, /yolo/tracking, /yolo/dbg_image
 ```
 
-The red-dot monitor computes marker coordinates and classifies the compression tester state:
+The green-dot monitor computes marker coordinates and classifies the compression tester state:
 
 ```text
 span_y = y_max - y_min
@@ -40,7 +40,7 @@ UNKNOWN     -> yellow overlay
 
 ```text
 UTM_VISION/
-  src/compression_tester_monitor/   ROS 2 package for red-dot monitoring
+  src/compression_tester_monitor/   ROS 2 package for green-dot monitoring
   scripts/                          Shell commands and bashrc alias sample
   docs/                             Usage notes for camera, monitor, YOLO, bashrc
   patches/                          Local yolo_ros patch for class filtering
@@ -85,13 +85,13 @@ Open three terminals after sourcing `~/.bashrc`.
 Terminal 1:
 
 ```bash
-camera
+camera_rect
 ```
 
 Terminal 2:
 
 ```bash
-red_dot_monitoring
+green_dot_monitoring
 ```
 
 `utm` is also available as a shorter alias for the same command.
@@ -106,8 +106,8 @@ Explicit commands:
 
 ```bash
 ros2 run usb_cam usb_cam_node_exe --ros-args -p framerate:=1.0
-ros2 launch compression_tester_monitor red_dot_monitor.launch.py
-ros2 launch yolo_bringup yolov8.launch.py input_image_topic:=/image_utm
+ros2 launch compression_tester_monitor green_dot_monitor.launch.py input_image_topic:=/camera/image_rect
+ros2 launch yolo_bringup yolov8.launch.py input_image_topic:=/image_utm classes:=0
 ```
 
 ## rqt Topics
@@ -115,12 +115,13 @@ ros2 launch yolo_bringup yolov8.launch.py input_image_topic:=/image_utm
 Use `rqt-topic-fixed` or `rqt` to inspect:
 
 ```text
-/image_raw
+/camera/image_raw
+/camera/image_rect
 /image_utm
 /compression_tester/state
 /compression_tester/summary
 /compression_tester/metrics
-/compression_tester/red_points
+/compression_tester/green_points
 /compression_tester/debug_image
 /yolo/dbg_image
 /yolo/detections
@@ -130,7 +131,7 @@ Use `rqt-topic-fixed` or `rqt` to inspect:
 Quick terminal checks:
 
 ```bash
-ros2 topic hz /image_raw
+ros2 topic hz /camera/image_rect
 ros2 topic hz /image_utm
 ros2 topic echo /compression_tester/summary
 ```
@@ -138,6 +139,6 @@ ros2 topic echo /compression_tester/summary
 ## Documentation
 
 - [Camera](docs/camera.md)
-- [Red Dot Monitoring](docs/red_dot_monitoring.md)
+- [Green Dot Monitoring](docs/green_dot_monitoring.md)
 - [YOLO](docs/yolo.md)
 - [bashrc Aliases](docs/bashrc.md)

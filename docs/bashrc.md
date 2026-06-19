@@ -14,15 +14,19 @@ fi
 if [ -f "$HOME/yolo_ros_ws/install/setup.bash" ]; then
     source "$HOME/yolo_ros_ws/install/setup.bash"
 fi
+
+if [ -f "$HOME/yolo_ros_ws/UTM_VISION/install/setup.bash" ]; then
+    source "$HOME/yolo_ros_ws/UTM_VISION/install/setup.bash"
+fi
 ```
 
 ## Aliases
 
 ```bash
-alias camera='ros2 run usb_cam usb_cam_node_exe --ros-args -p framerate:=1.0'
-alias red_dot_monitoring='ros2 launch compression_tester_monitor red_dot_monitor.launch.py'
-alias utm='ros2 launch compression_tester_monitor red_dot_monitor.launch.py'
-alias yolo='ros2 launch yolo_bringup yolov8.launch.py input_image_topic:=/image_utm'
+alias camera_rect='$HOME/.local/bin/camera_rect'
+alias green_dot_monitoring='ros2 launch compression_tester_monitor green_dot_monitor.launch.py input_image_topic:=/camera/image_rect'
+alias utm='ros2 launch compression_tester_monitor green_dot_monitor.launch.py input_image_topic:=/camera/image_rect'
+alias yolo='ros2 launch yolo_bringup yolov8.launch.py input_image_topic:=/image_utm classes:=0'
 ```
 
 ## Apply
@@ -36,7 +40,7 @@ source ~/.bashrc
 Then run the workflow:
 
 ```bash
-camera
-red_dot_monitoring
+camera_rect
+green_dot_monitoring
 yolo
 ```
