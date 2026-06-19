@@ -93,6 +93,15 @@ ros2 launch compression_tester_monitor green_dot_monitor.launch.py
 ros2 launch yolo_bringup yolov8.launch.py input_image_topic:=/image_utm classes:=0
 ```
 
+`camera_rect` defaults to `pixel_format:=yuyv2rgb`. This selects the BRIO YUYV stream and converts it to `rgb8` inside `usb_cam`, avoiding MJPEG decode artifacts while keeping the same ROS topics for rectification and marker detection.
+
+To compare formats:
+
+```bash
+camera_rect pixel_format:=mjpeg2rgb
+camera_rect pixel_format:=yuyv2rgb
+```
+
 ## Parameters
 
 State overlay colors use OpenCV BGR drawing:
@@ -104,6 +113,22 @@ UNKNOWN     -> yellow
 ```
 
 Launch parameters:
+
+`camera_rect.launch.py` parameters:
+
+| Parameter | Default | Description |
+| --- | ---: | --- |
+| `video_device` | `/dev/v4l/by-id/usb-046d_Logitech_BRIO_1CD057A6-video-index0` | BRIO V4L2 camera device. |
+| `image_width` | `640` | Camera image width. |
+| `image_height` | `480` | Camera image height. |
+| `framerate` | `30.0` | Camera frame rate. |
+| `pixel_format` | `yuyv2rgb` | Camera input format; use `mjpeg2rgb` only when testing MJPEG. |
+| `camera_info_url` | `file:///home/lee-junyoung/.ros/camera_info/default_cam.yaml` | Calibration YAML used by rectification. |
+| `brightness` | `128` | Camera brightness control value. |
+| `gain` | `-1` | Camera gain control value; `-1` leaves it unchanged. |
+| `diagnostic_logging` | `true` | Enable frame timing logs. |
+
+`green_dot_monitor.launch.py` parameters:
 
 | Parameter | Default | Description |
 | --- | ---: | --- |

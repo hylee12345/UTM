@@ -9,6 +9,7 @@ The system is split into three runtime steps:
 ```text
 camera_rect
   publishes /camera/image_raw and /camera/image_rect
+  defaults to 640x480 YUYV input converted to RGB
 
 green_dot_monitoring
   subscribes /camera/image_rect
@@ -88,6 +89,12 @@ Terminal 1:
 camera_rect
 ```
 
+`camera_rect` defaults to `pixel_format:=yuyv2rgb` to avoid MJPEG decoder artifacts on the BRIO camera. To test MJPEG again:
+
+```bash
+camera_rect pixel_format:=mjpeg2rgb
+```
+
 Terminal 2:
 
 ```bash
@@ -105,7 +112,7 @@ yolo
 Explicit commands:
 
 ```bash
-ros2 run usb_cam usb_cam_node_exe --ros-args -p framerate:=1.0
+ros2 launch compression_tester_monitor camera_rect.launch.py pixel_format:=yuyv2rgb
 ros2 launch compression_tester_monitor green_dot_monitor.launch.py input_image_topic:=/camera/image_rect
 ros2 launch yolo_bringup yolov8.launch.py input_image_topic:=/image_utm classes:=0
 ```

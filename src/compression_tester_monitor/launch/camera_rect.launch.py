@@ -49,6 +49,11 @@ def generate_launch_description():
                 description="Camera gain control value; -1 leaves it unchanged",
             ),
             DeclareLaunchArgument(
+                "pixel_format",
+                default_value="yuyv2rgb",
+                description="usb_cam pixel format; yuyv2rgb avoids MJPEG decoding",
+            ),
+            DeclareLaunchArgument(
                 "diagnostic_logging",
                 default_value="true",
                 description="Enable frame timing logs",
@@ -67,7 +72,7 @@ def generate_launch_description():
                         "framerate": LaunchConfiguration("framerate"),
                         "brightness": LaunchConfiguration("brightness"),
                         "gain": LaunchConfiguration("gain"),
-                        "pixel_format": "mjpeg2rgb",
+                        "pixel_format": LaunchConfiguration("pixel_format"),
                         "camera_name": "default_cam",
                         "camera_info_url": LaunchConfiguration("camera_info_url"),
                         "publish_camera_info": True,

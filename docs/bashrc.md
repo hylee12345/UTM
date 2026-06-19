@@ -44,3 +44,10 @@ camera_rect
 green_dot_monitoring
 yolo
 ```
+
+`camera_rect` forwards extra launch arguments, so the camera format can be changed from the shell:
+
+```bash
+camera_rect pixel_format:=yuyv2rgb
+camera_rect pixel_format:=mjpeg2rgb
+```
