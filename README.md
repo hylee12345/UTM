@@ -109,6 +109,16 @@ Terminal 3:
 yolo
 ```
 
+One-shot stack script for GUI/API launch:
+
+```bash
+~/yolo_ros_ws/UTM_VISION/scripts/start_utm_vision_stack.sh
+```
+
+The `autonomous_researcher` GUI calls this script through its UTM Vision Runtime
+Loading button. The script starts `camera_rect`, `green_dot_monitor`, and `yolo`
+in one process group and stops the full stack together.
+
 Explicit commands:
 
 ```bash
