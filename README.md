@@ -25,8 +25,8 @@ The green-dot monitor computes marker coordinates and classifies the compression
 
 ```text
 span_y = y_max - y_min
-span_y <= 300 px -> WORKING
-span_y > 300 px  -> NOT_WORKING
+span_y <= 250 px -> WORKING
+span_y > 250 px  -> NOT_WORKING
 ```
 
 `/image_utm` draws the compression tester marker bounding box:
@@ -114,7 +114,7 @@ Explicit commands:
 ```bash
 ros2 launch compression_tester_monitor camera_rect.launch.py pixel_format:=yuyv2rgb
 ros2 launch compression_tester_monitor green_dot_monitor.launch.py input_image_topic:=/camera/image_rect
-ros2 launch yolo_bringup yolov8.launch.py input_image_topic:=/image_utm classes:=0
+ros2 launch yolo_bringup yolov8.launch.py input_image_topic:=/image_utm classes:=0 threshold:=0.7
 ```
 
 ## rqt Topics

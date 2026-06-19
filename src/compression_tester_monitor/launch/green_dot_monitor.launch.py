@@ -24,7 +24,7 @@ def generate_launch_description():
             ),
             DeclareLaunchArgument(
                 "working_height_threshold_px",
-                default_value="300.0",
+                default_value="250.0",
                 description="WORKING if green marker y-span is less than or equal to this value",
             ),
             DeclareLaunchArgument(
@@ -34,12 +34,12 @@ def generate_launch_description():
             ),
             DeclareLaunchArgument(
                 "roi_x_min",
-                default_value="1000",
+                default_value="180",
                 description="Left ROI boundary in the source image",
             ),
             DeclareLaunchArgument(
                 "roi_x_max",
-                default_value="1450",
+                default_value="410",
                 description="Right ROI boundary in the source image",
             ),
             DeclareLaunchArgument(

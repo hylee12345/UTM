@@ -38,8 +38,8 @@ span_y = y_max - y_min
 Default threshold:
 
 ```text
-span_y <= 300 px -> WORKING
-span_y > 300 px  -> NOT_WORKING
+span_y <= 250 px -> WORKING
+span_y > 250 px  -> NOT_WORKING
 ```
 
 ## Output Topics
@@ -70,13 +70,13 @@ Common launch parameters:
 ```bash
 ros2 launch compression_tester_monitor green_dot_monitor.launch.py \
   input_image_topic:=/camera/image_rect \
-  working_height_threshold_px:=300.0 \
+  working_height_threshold_px:=250.0 \
   use_roi:=True \
-  roi_x_min:=1000 roi_x_max:=1450 \
+  roi_x_min:=180 roi_x_max:=410 \
   roi_y_min:=0 roi_y_max:=0
 ```
 
-The ROI uses source-image pixel coordinates. A `roi_y_max` value of `0` means the full image height. The published `/image_utm` remains full-size unless `hide_outside_roi:=True` is selected.
+The ROI uses source-image pixel coordinates. The current 640x480 rectified camera view limits only the x-axis around the compression tester markers: `x=180..410`. The y-axis is unrestricted with `roi_y_min:=0` and `roi_y_max:=0`, where `roi_y_max` of `0` means the full image height. The published `/image_utm` remains full-size unless `hide_outside_roi:=True` is selected.
 
 ## Check
 

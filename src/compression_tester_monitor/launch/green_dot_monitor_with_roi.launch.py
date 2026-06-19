@@ -29,12 +29,12 @@ def generate_launch_description():
             ),
             DeclareLaunchArgument(
                 "roi_x_min",
-                default_value="1000",
+                default_value="180",
                 description="Left crop boundary in the raw image",
             ),
             DeclareLaunchArgument(
                 "roi_x_max",
-                default_value="1450",
+                default_value="410",
                 description="Right crop boundary in the raw image",
             ),
             DeclareLaunchArgument(

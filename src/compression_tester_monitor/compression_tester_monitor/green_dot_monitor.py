@@ -29,7 +29,7 @@ class GreenDotMonitor(Node):
     def __init__(self) -> None:
         super().__init__("green_dot_monitor")
 
-        self.declare_parameter("working_height_threshold_px", 300.0)
+        self.declare_parameter("working_height_threshold_px", 250.0)
         self.declare_parameter("min_points", 2)
         self.declare_parameter("min_area", 25.0)
         self.declare_parameter("max_area", 2500.0)
@@ -53,8 +53,8 @@ class GreenDotMonitor(Node):
         self.declare_parameter("morph_open_size", 3)
         self.declare_parameter("morph_close_size", 5)
         self.declare_parameter("use_x_roi", False)
-        self.declare_parameter("roi_x_min", 1000)
-        self.declare_parameter("roi_x_max", 1450)
+        self.declare_parameter("roi_x_min", 180)
+        self.declare_parameter("roi_x_max", 410)
         self.declare_parameter("roi_y_min", 0)
         self.declare_parameter("roi_y_max", 0)
         self.declare_parameter("hide_outside_x_roi", False)

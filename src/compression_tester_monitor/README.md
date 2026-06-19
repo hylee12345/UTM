@@ -16,7 +16,7 @@ The node subscribes to a camera image, detects green marker dots with OpenCV, co
   -> /yolo/dbg_image
 ```
 
-The `yolo` alias is configured to launch YOLO with `input_image_topic:=/image_utm` and `classes:=0` for person-only detection.
+The `yolo` alias is configured to launch YOLO with `input_image_topic:=/image_utm`, `classes:=0`, and `threshold:=0.7` for person-only detection.
 
 ## State Logic
 
@@ -33,8 +33,8 @@ span_y = y_max - y_min
 Default classification:
 
 ```text
-span_y <= 300 px  -> WORKING
-span_y > 300 px   -> NOT_WORKING
+span_y <= 250 px  -> WORKING
+span_y > 250 px   -> NOT_WORKING
 not enough points -> UNKNOWN
 ```
 
@@ -90,7 +90,7 @@ Equivalent explicit commands:
 ```bash
 ros2 launch compression_tester_monitor camera_rect.launch.py
 ros2 launch compression_tester_monitor green_dot_monitor.launch.py
-ros2 launch yolo_bringup yolov8.launch.py input_image_topic:=/image_utm classes:=0
+ros2 launch yolo_bringup yolov8.launch.py input_image_topic:=/image_utm classes:=0 threshold:=0.7
 ```
 
 `camera_rect` defaults to `pixel_format:=yuyv2rgb`. This selects the BRIO YUYV stream and converts it to `rgb8` inside `usb_cam`, avoiding MJPEG decode artifacts while keeping the same ROS topics for rectification and marker detection.
@@ -134,35 +134,35 @@ Launch parameters:
 | --- | ---: | --- |
 | `input_image_topic` | `/camera/image_rect` | Rectified camera image topic. |
 | `output_image_topic` | `/image_utm` | Annotated image topic for YOLO input. |
-| `working_height_threshold_px` | `300.0` | `WORKING` if `span_y` is less than or equal to this value. |
+| `working_height_threshold_px` | `250.0` | `WORKING` if `span_y` is less than or equal to this value. |
 | `marker_max_span_y` | `700.0` | Maximum vertical span accepted for one upper/lower marker cluster. |
-| `roi_x_min` | `500` | ROI left boundary in pixels. |
-| `roi_y_min` | `80` | ROI top boundary in pixels. |
-| `roi_x_max` | `950` | ROI right boundary in pixels. |
-| `roi_y_max` | `480` | ROI bottom boundary in pixels. |
+| `roi_x_min` | `180` | ROI left boundary in pixels. |
+| `roi_y_min` | `0` | ROI top boundary in pixels. |
+| `roi_x_max` | `410` | ROI right boundary in pixels. |
+| `roi_y_max` | `0` | ROI bottom boundary in pixels; `0` means full image height. |
 
-Node-only parameters with defaults:
+Detector parameters with defaults:
 
 | Parameter | Default | Description |
 | --- | ---: | --- |
 | `min_points` | `2` | Minimum number of green points required for a valid state. |
-| `min_area` | `40.0` | Minimum green contour area. |
-| `max_area` | `1500.0` | Maximum green contour area. |
-| `min_circularity` | `0.4` | Minimum contour circularity. |
-| `sat_min` | `80` | Minimum HSV saturation for green mask. |
-| `val_min` | `80` | Minimum HSV value for green mask. |
+| `min_area` | `25.0` | Minimum green contour area. |
+| `max_area` | `2500.0` | Maximum green contour area. |
+| `min_circularity` | `0.25` | Minimum contour circularity. |
+| `sat_min` | `45` | Minimum HSV saturation for green mask. |
+| `val_min` | `25` | Minimum HSV value for green mask. |
 
 Example threshold override:
 
 ```bash
-ros2 launch compression_tester_monitor green_dot_monitor.launch.py working_height_threshold_px:=280.0
+ros2 launch compression_tester_monitor green_dot_monitor.launch.py working_height_threshold_px:=250.0
 ```
 
 Example ROI override:
 
 ```bash
 ros2 launch compression_tester_monitor green_dot_monitor.launch.py \
-  roi_x_min:=520 roi_y_min:=90 roi_x_max:=930 roi_y_max:=460
+  roi_x_min:=180 roi_y_min:=0 roi_x_max:=410 roi_y_max:=0
 ```
 
 ## rqt Checks

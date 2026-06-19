@@ -7,12 +7,13 @@ The current local `yolo` alias launches `yolov8.launch.py` with:
 ```text
 input_image_topic:=/image_utm
 classes:=0
+threshold:=0.7
 ```
 
 ## Alias
 
 ```bash
-alias yolo='ros2 launch yolo_bringup yolov8.launch.py input_image_topic:=/image_utm classes:=0'
+alias yolo='ros2 launch yolo_bringup yolov8.launch.py input_image_topic:=/image_utm classes:=0 threshold:=0.7'
 ```
 
 ## Run
@@ -24,7 +25,7 @@ yolo
 Equivalent command:
 
 ```bash
-ros2 launch yolo_bringup yolov8.launch.py input_image_topic:=/image_utm classes:=0
+ros2 launch yolo_bringup yolov8.launch.py input_image_topic:=/image_utm classes:=0 threshold:=0.7
 ```
 
 ## Notes
@@ -38,13 +39,14 @@ patches/yolo_ros_person_filter.patch
 The patched `yolov8.launch.py` defaults used during development:
 
 ```text
-threshold = 0.9
+threshold = 0.7
 device = cuda:0
 input_image_topic = /image_raw
 classes = 0
 ```
 
 The alias overrides the input topic to `/image_utm`.
+The alias keeps person-only detection with `classes:=0` and uses `threshold:=0.7` for stricter detections.
 
 ## Output Topics
 
