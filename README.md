@@ -37,6 +37,43 @@ NOT_WORKING -> blue bounding box
 UNKNOWN     -> yellow overlay
 ```
 
+## Autonomous Researcher Integration
+
+This repository now also carries the files needed to connect the UTM vision
+pipeline to the `autonomous_researcher` agent runtime. The integration keeps ROS
+execution outside the FastAPI web process:
+
+```text
+GUI Loading button
+  -> POST /api/equipment/utm-runtime/start
+  -> UTMRuntimeProcessManager
+  -> scripts/start_utm_vision_stack.sh
+  -> camera_rect + green_dot_monitor + yolo
+```
+
+Monitoring is separate from start/stop. When an agent receives a request such as
+`UTM 모니터링해`, it should call `vision.equipment_cross_check`. That function
+samples `/compression_tester/summary` repeatedly for several seconds and returns
+a structured JSON result. It does not decide from one image frame.
+
+```text
+ToolRegistry.call("vision.equipment_cross_check", payload)
+  -> observe_utm_state_window(duration_sec=5.0, sample_interval_sec=0.2, minimum_samples=8)
+  -> summarize_utm_state_sequence(samples)
+  -> return WORKING / NOT_WORKING / transition evidence
+```
+
+The autonomous researcher files are stored under:
+
+```text
+autonomous_researcher_required_files/
+```
+
+Copy those files into the matching paths of an `autonomous_researcher` checkout
+when applying the integration there. See the full integration guide:
+
+- [Autonomous Researcher Integration](docs/autonomous_researcher_integration.md)
+
 ## Repository Layout
 
 ```text
@@ -119,6 +156,18 @@ The `autonomous_researcher` GUI calls this script through its UTM Vision Runtime
 Loading button. The script starts `camera_rect`, `green_dot_monitor`, and `yolo`
 in one process group and stops the full stack together.
 
+For the GUI/API path, start the `autonomous_researcher` server and press:
+
+```text
+Device Workspaces -> UTM Vision Runtime -> Loading
+```
+
+The runtime status endpoint is:
+
+```bash
+curl http://127.0.0.1:7860/api/equipment/utm-runtime/status
+```
+
 Explicit commands:
 
 ```bash
@@ -159,3 +208,4 @@ ros2 topic echo /compression_tester/summary
 - [Green Dot Monitoring](docs/green_dot_monitoring.md)
 - [YOLO](docs/yolo.md)
 - [bashrc Aliases](docs/bashrc.md)
+- [Autonomous Researcher Integration](docs/autonomous_researcher_integration.md)

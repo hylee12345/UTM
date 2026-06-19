@@ -55,6 +55,25 @@ span_y > 250 px  -> NOT_WORKING
 
 `/image_utm` is the image that YOLO should consume.
 
+`/compression_tester/summary` is the state topic consumed by the
+`autonomous_researcher` monitoring function. It is published as
+`std_msgs/String` containing JSON. The important fields are:
+
+```json
+{
+  "state": "WORKING",
+  "span_y": 248.2,
+  "point_count": 2,
+  "raw_point_count": 3,
+  "selected_point_count": 2,
+  "tracking_hold": false,
+  "points": []
+}
+```
+
+The agent integration samples this topic for several seconds. A single message
+is not enough to decide whether the tester is working.
+
 ## Overlay Colors
 
 ```text
@@ -84,4 +103,10 @@ The ROI uses source-image pixel coordinates. The current 640x480 rectified camer
 ros2 topic hz /image_utm
 ros2 topic echo /compression_tester/state
 ros2 topic echo /compression_tester/summary
+```
+
+For one JSON sample:
+
+```bash
+ros2 topic echo /compression_tester/summary --once --field data
 ```

@@ -48,6 +48,15 @@ classes = 0
 The alias overrides the input topic to `/image_utm`.
 The alias keeps person-only detection with `classes:=0` and uses `threshold:=0.7` for stricter detections.
 
+The one-shot GUI/API stack script passes an absolute model path:
+
+```text
+model:=/home/lee-junyoung/yolo_ros_ws/yolov8m.pt
+```
+
+This avoids failures where the GUI launches the stack from a working directory
+that does not contain `yolov8m.pt`.
+
 ## Output Topics
 
 ```text
