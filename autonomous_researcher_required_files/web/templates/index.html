@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<!--
+File purpose:
+- Main web dashboard template for controlling and visualizing orchestration loops.
+
+Key classes/functions:
+- Root layout sections consumed by web/static/app.js
+
+Inputs/outputs:
+- Input: FastAPI template context
+- Output: interactive dashboard page
+
+Dependencies:
+- /static/styles.css
+- /static/app.js
+
+Modification guide:
+- Safe places to edit: panel layout and labels
+- Risky places to edit: element IDs consumed by JavaScript
+- Related files: web/static/app.js, app/main.py
+-->
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{{ title }}</title>
+    <link rel="icon" type="image/svg+xml" href="/static/favicon.svg" />
+    <link rel="stylesheet" href="/static/styles.css?v=atr-ui-20260531-main-runtime-legend-1" />
+  </head>
+  <body>
+    <main class="page">
+      <section class="hero panel">
+        <div class="hero-copy">
+          <p class="eyebrow">Autonomous Researcher Platform</p>
+          <h1>Low Cost Self-Driving Lab</h1>
+          <p class="subhead">
+            NemoClaw-backed multi-agent orchestration with Gemma4 role split, hybrid RAG, and live loop visibility.
+          </p>
+          <div class="hero-badges">
+            <span class="hero-badge">NemoClaw core</span>
+            <span class="hero-badge">Gemma4 hierarchy</span>
+            <span class="hero-badge">Live graph telemetry</span>
+          </div>
+        </div>
+        <div class="hero-stack">
+          <article class="status-card">
+            <div class="status-head">
+              <span class="status-title">Runtime Backend</span>
+              <span id="backend-status-dot" class="status-dot idle"></span>
+            </div>
+            <strong id="backend-status-label">NemoClaw standby</strong>
+            <p id="backend-status-detail">Ready to route through the authenticated proxy.</p>
+          </article>
+          <article class="status-card">
+            <div class="status-head">
+              <span class="status-title">Nemoclaw Agent Work</span>
+              <span id="nemoclaw-status-dot" class="status-dot idle"></span>
+            </div>
+            <strong id="nemoclaw-status-label">Waiting</strong>
+            <p id="nemoclaw-status-detail">No active inference-backed agent cycle.</p>
+          </article>
+          <article class="status-card stack-wide">
+            <div class="status-head">
+              <span class="status-title">Current Models</span>
+              <span class="status-caption">31B / E4B</span>
+            </div>
+            <div class="model-grid">
+              <div class="model-chip" id="model-orchestrator-chip" data-model="gemma4:31b">
+                <span class="chip-dot"></span>
+                <div class="model-copy">
+                  <small>31B</small>
+                  <strong>gemma4:31b</strong>
+                </div>
+                <div class="model-actions">
+                  <span class="model-load-dot" data-model-dot="gemma4:31b"></span>
+                  <button class="btn mini model-load-btn" data-model="gemma4:31b">Loading</button>
+                  <button class="btn mini model-unload-btn" data-model="gemma4:31b">Unloading</button>
+                </div>
+              </div>
+              <div class="model-chip" id="model-e4b-chip" data-model="gemma4:e4b-it-nvfp4">
+                <span class="chip-dot"></span>
+                <div class="model-copy">
+                  <small>E4B</small>
+                  <strong>gemma4:e4b-it-nvfp4</strong>
+                </div>
+                <div class="model-actions">
+                  <span class="model-load-dot" data-model-dot="gemma4:e4b-it-nvfp4"></span>
+                  <button class="btn mini model-load-btn" data-model="gemma4:e4b-it-nvfp4">Loading</button>
+                  <button class="btn mini model-unload-btn" data-model="gemma4:e4b-it-nvfp4">Unloading</button>
+                </div>
+              </div>
+              <div class="model-chip api-key-chip" id="api-key-chip">
+                <span class="chip-dot"></span>
+                <div class="model-copy api-key-copy">
+                  <button id="api-key-open-btn" class="btn mini api-key-open-btn" type="button">API Key</button>
+                  <strong id="api-key-status-text">not configured</strong>
+                  <small id="api-key-detail">OpenAI API key is stored locally.</small>
+                </div>
+                <div class="model-actions">
+                  <span id="api-key-dot" class="model-load-dot unloaded"></span>
+                  <button id="api-key-load-btn" class="btn mini api-key-load-btn" type="button">Loading</button>
+                  <button id="api-key-unload-btn" class="btn mini api-key-unload-btn" type="button">Unloading</button>
+                </div>
+              </div>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section class="panel controls">
+        <div class="panel-title-row">
+          <h2>Run Control</h2>
+          <span id="metric-cycle" class="badge idle" title="Current closed-loop cycle">C:0/5</span>
+          <span id="run-indicator" class="badge idle">IDLE</span>
+        </div>
+        <div class="control-grid">
+          <label>
+            Mode
+            <select id="mode-select">
+              <option value="test">test</option>
+              <option value="live">live</option>
+              <option value="replay">replay</option>
+              <option value="fault-injection">fault-injection</option>
+            </select>
+          </label>
+          <label>
+            Inference
+            <select id="backend-select">
+              <option value="nemoclaw">Ollama / NemoClaw</option>
+              <option value="vllm" selected>NemoClaw / vLLM</option>
+            </select>
+          </label>
+          <label>
+            Goal
+            <input id="goal-input" type="text" value="Build autonomous AI researcher pipeline" />
+          </label>
+          <label>
+            Fault
+            <input id="fault-input" type="text" value="none" />
+          </label>
+          <label>
+            Fault Stage
+            <input id="fault-stage-input" type="text" placeholder="manipulation" />
+          </label>
+        </div>
+        <div class="button-row">
+          <button id="btn-start" class="btn primary">Start</button>
+          <button id="btn-pause" class="btn">Pause</button>
+          <button id="btn-resume" class="btn">Resume</button>
+          <button id="btn-stop" class="btn danger">Stop</button>
+          <button id="btn-safe-stop" class="btn warning">Safe Stop</button>
+          <button id="btn-gpu-clear" class="btn warning">GPU Clear</button>
+        </div>
+      </section>
+
+      <section class="panel workspace-panel">
+        <div class="panel-title-row">
+          <h2>Device Workspaces</h2>
+          <span class="hint">specialized control surfaces</span>
+        </div>
+        <div class="workspace-grid">
+          <article class="workspace-card">
+            <div class="status-head">
+              <span class="status-title">3DP Printer Bridge</span>
+              <span id="printer-workspace-dot" class="status-dot idle"></span>
+            </div>
+            <strong>Bambu default · Prusa explicit selection</strong>
+            <p id="printer-workspace-detail">Reading selected 3DP bridge profile status.</p>
+            <a id="btn-open-printer" class="btn primary" href="/printer" target="_blank" rel="noopener">Open 3DP GUI</a>
+          </article>
+          <article class="workspace-card">
+            <div class="status-head">
+              <span class="status-title">Windows PyAutoGUI Bridge</span>
+              <span id="windows-workspace-dot" class="status-dot idle"></span>
+            </div>
+            <strong>Internal PC discovery · macro bridge setup</strong>
+            <p id="windows-workspace-detail">Reading saved Windows bridge candidates.</p>
+            <a id="btn-open-windows-bridge" class="btn primary" href="/equipment/windows" target="_blank" rel="noopener">Open Windows Bridge GUI</a>
+          </article>
+          <article class="workspace-card">
+            <div class="status-head">
+              <span class="status-title">LeRobot / ROBOTIS</span>
+              <span id="lerobot-workspace-dot" class="status-dot idle"></span>
+            </div>
+            <strong>Manipulation Agent</strong>
+            <p id="lerobot-workspace-detail">Reading LeRobot bridge profile status.</p>
+            <button id="btn-open-lerobot" class="btn primary">Open LeRobot GUI</button>
+          </article>
+          <article class="workspace-card">
+            <div class="status-head">
+              <span class="status-title">BO Workspace</span>
+              <span id="bo-workspace-dot" class="status-dot idle"></span>
+            </div>
+            <strong>Acquisition · BO/MBO · Benchmark</strong>
+            <p id="bo-workspace-detail">Reading optimization defaults.</p>
+            <a id="btn-open-bo" class="btn primary" href="/bo" target="_blank" rel="noopener">Open BO Workspace</a>
+          </article>
+          <article class="workspace-card">
+            <div class="status-head">
+              <span class="status-title">CAE Analysis</span>
+              <span id="cae-workspace-dot" class="status-dot idle"></span>
+            </div>
+            <strong>CalculiX · bottom fixed · top cyclic</strong>
+            <p id="cae-workspace-detail">Reading CAE bridge status.</p>
+            <a id="btn-open-cae" class="btn primary" href="/cae" target="_blank" rel="noopener">Open CAE Workspace</a>
+          </article>
+          <article class="workspace-card">
+            <div class="status-head">
+              <span class="status-title">UTM Vision Runtime</span>
+              <span id="utm-runtime-workspace-dot" class="status-dot idle"></span>
+            </div>
+            <strong>camera_rect · green_dot_monitor · YOLO</strong>
+            <p id="utm-runtime-workspace-detail">Reading UTM Vision runtime status.</p>
+            <div class="button-row compact-tools">
+              <button id="btn-utm-runtime-load" class="btn primary" type="button">Loading</button>
+              <button id="btn-utm-runtime-stop" class="btn danger" type="button">Stop</button>
+            </div>
+          </article>
+          <article class="workspace-card">
+            <div class="status-head">
+              <span class="status-title">Self-Evolution Lab</span>
+              <span class="status-dot idle"></span>
+            </div>
+            <strong>Trace mining · candidate gates · next-run activation</strong>
+            <p>Closed-loop run traces를 기반으로 prompt/graph/report/policy 후보를 검증합니다.</p>
+            <a id="btn-open-evolution" class="btn primary" href="/evolution-lab" target="_blank" rel="noopener">Open Evolution Lab</a>
+          </article>
+        </div>
+      </section>
+
+      <section class="panel timeline-panel">
+        <div class="panel-title-row">
+          <h2>Loop Timeline</h2>
+          <span class="hint">Live SSE events</span>
+        </div>
+        <div id="timeline" class="timeline"></div>
+      </section>
+
+      <section class="split">
+        <article class="panel">
+          <div class="panel-title-row">
+            <h2>Agent Status</h2>
+          </div>
+          <div id="agent-status" class="list"></div>
+        </article>
+        <article class="panel">
+          <div class="panel-title-row">
+            <h2>Device Health</h2>
+          </div>
+          <div id="device-status" class="list"></div>
+        </article>
+      </section>
+
+      <section class="panel">
+        <div class="panel-title-row">
+          <h2>Structured Events</h2>
+          <label class="inline-filter">
+            Level
+            <select id="log-level-filter">
+              <option value="all">all</option>
+              <option value="INFO">INFO</option>
+              <option value="WARNING">WARNING</option>
+              <option value="ERROR">ERROR</option>
+            </select>
+          </label>
+        </div>
+        <div id="log-viewer" class="log-viewer"></div>
+      </section>
+
+      <section class="panel graph-panel">
+        <div class="panel-title-row">
+          <h2>LangGraph Runtime Map</h2>
+          <span id="graph-stage-indicator" class="badge idle">STAGE: IDLE</span>
+        </div>
+        <p class="graph-subhead">
+          Read-only canvas rendered from the active LangGraph config. Edit routes and modules in Runtime IDE.
+        </p>
+        <div class="langgraph-shell runtime-readonly-map" aria-label="Read-only LangGraph runtime canvas">
+          <div id="langgraph-cells" class="langgraph-cells" aria-hidden="true"></div>
+          <div id="langgraph-nodes" class="langgraph-nodes"></div>
+          <aside id="runtime-map-legend" class="runtime-map-legend" aria-label="Runtime map legend"></aside>
+        </div>
+        <div class="graph-legend">
+          <span><i class="legend-dot active"></i>Active</span>
+          <span><i class="legend-dot visited"></i>Visited</span>
+          <span><i class="legend-dot idle"></i>Idle</span>
+        </div>
+        <div class="runtime-map-actions">
+          <div>
+            <strong>Runtime IDE</strong>
+            <span>LangGraph graph/module config, validation, dry-run, version activation</span>
+          </div>
+          <a class="btn primary runtime-map-ide-btn" href="/ide" target="_blank" rel="noopener">Open Runtime IDE</a>
+        </div>
+      </section>
+    </main>
+
+    <dialog id="api-key-dialog" class="api-key-dialog" aria-labelledby="api-key-dialog-title">
+      <form id="api-key-form" class="api-key-form" method="dialog">
+        <div class="api-key-dialog-head">
+          <div>
+            <h3 id="api-key-dialog-title">OpenAI API Key</h3>
+            <p>Saved locally to <code>memory/api_keys.json</code>. The file is ignored by git.</p>
+          </div>
+          <button id="api-key-close-btn" class="btn mini" type="button">Close</button>
+        </div>
+        <label>
+          API key
+          <input id="api-key-input" type="password" autocomplete="off" placeholder="sk-..." />
+        </label>
+        <label class="api-key-checkbox">
+          <input id="api-key-enable-input" type="checkbox" checked />
+          Enable after saving
+        </label>
+        <p id="api-key-dialog-status" class="api-key-dialog-status">Current key is never displayed in full.</p>
+        <div class="api-key-dialog-actions">
+          <button id="api-key-save-btn" class="btn primary" type="submit">Save API Key</button>
+        </div>
+      </form>
+    </dialog>
+
+    <script src="/static/runtime_graph_geometry.js?v=atr-ui-20260531-graph-geometry-3"></script>
+    <script src="/static/app.js?v=20260619-utm-runtime-2" defer></script>
+  </body>
+</html>
